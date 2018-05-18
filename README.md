@@ -1,6 +1,6 @@
 ## bin picking use 3d seg and super4pcs  
-This repo is separated from the big 6d pose repo, because we have finished
-the core algorithm, and we are trying to deploy and actually run it now.  
+This repo is separated from 6d pose repo, because ori repo is too big
+to deploy.  
 
 Briefly speaking, we seg the point cloud by convex criteria (any point's
 tangent plane is not intersected with cloud), then use super4pcs to find 
