@@ -1,0 +1,6 @@
+.idea/
+
+build/
+CMakeLists.txt.user
+
+__pycache__
