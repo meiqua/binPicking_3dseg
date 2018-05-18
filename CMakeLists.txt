@@ -14,6 +14,8 @@ OPTION(USE_PYBIND "Enable pybind" TRUE)
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /home/meiqua/anaconda3/envs/furnace)
 set(CUDA_TOOLKIT_ROOT_DIR /usr/local/cuda-8.0)
 find_package(OpenCV 3 REQUIRED)
+include_directories(${INCLUDE_DIRECTORIES}
+        ${OpenCV_INCLUDE_DIRS})
 
 
 # eigen3
@@ -52,15 +54,15 @@ if (USE_PYBIND)
     set(SOURCE_PYBIND
         pybind11/pybind11.cpp
         pybind11/np2mat/ndarray_converter.cpp)
+    include_directories(${INCLUDE_DIRECTORIES}
+            ${PYTHON_INCLUDE_DIRS}
+            ${PYTHON_NUMPY_INCLUDE_DIR})
 endif()
 
 
 
 # include & src & lib
 include_directories(${INCLUDE_DIRECTORIES}
-        ${OpenCV_INCLUDE_DIRS}
-        ${PYTHON_INCLUDE_DIRS}
-        ${PYTHON_NUMPY_INCLUDE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_LIST_DIR})
