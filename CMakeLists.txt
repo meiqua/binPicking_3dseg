@@ -3,11 +3,12 @@ set (CMAKE_CXX_STANDARD 14)
 project(cxx_3d_seg_pybind)
 
 # debug or release
-SET(CMAKE_BUILD_TYPE "Debug")
-#SET(CMAKE_BUILD_TYPE "Release")
-SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb -fPIC")
-SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -fPIC")
+#SET(CMAKE_BUILD_TYPE "Debug")
+##SET(CMAKE_BUILD_TYPE "Release")
+#SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb -fPIC")
+#SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -fPIC")
 
+OPTION(USE_PYBIND "Enable pybind" TRUE)
 
 # opencv
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /home/meiqua/anaconda3/envs/furnace)
@@ -43,6 +44,18 @@ set(SOURCE_ASP
 	asp/src/libasp/pds/FloydSteinberg.cpp)
 
 
+# pybind
+if (USE_PYBIND)
+    find_package(PythonLibs 3 REQUIRED)
+    find_package(pybind11 REQUIRED)
+    include(pybind11/Cmake/FindNumPy.cmake)
+    set(SOURCE_PYBIND
+        pybind11/pybind11.cpp
+        pybind11/np2mat/ndarray_converter.cpp)
+endif()
+
+
+
 # include & src & lib
 include_directories(${INCLUDE_DIRECTORIES}
         ${OpenCV_INCLUDE_DIRS}
@@ -60,14 +73,10 @@ set(LIBS
 
 
 # pybind
-#find_package(PythonLibs 3 REQUIRED)
-#find_package(pybind11 REQUIRED)
-#include(pybind11/Cmake/FindNumPy.cmake)
-#set(SOURCE_PYBIND
-#    pybind11/pybind11.cpp
-#    pybind11/np2mat/ndarray_converter.cpp)
-#pybind11_add_module(${PROJECT_NAME} ${SOURCE} ${SOURCE_PYBIND})
-#target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
+if (USE_PYBIND)
+    pybind11_add_module(${PROJECT_NAME} ${SOURCE} ${SOURCE_PYBIND})
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
+endif()
 
 
 add_executable(${PROJECT_NAME}_executable ${SOURCE} test.cpp)

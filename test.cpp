@@ -387,7 +387,7 @@ void ppf_test(){
 int main(){
 //    simple_test();
 //    dataset_test();
-    super4pcs_test();
+//    super4pcs_test();
 //    ppf_test();
     cout << "end" << endl;
     return 0;
