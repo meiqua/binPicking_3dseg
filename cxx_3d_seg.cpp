@@ -1,6 +1,5 @@
 #include "cxx_3d_seg.h"
-
-
+namespace cxx_3d_seg {
 cv::Mat convex_cloud_seg(cv::Mat &rgb, cv::Mat &depth, cv::Mat& sceneK)
 {
     auto rgb_slimage = slimage::ConvertToSlimage(rgb);
@@ -72,3 +71,6 @@ cv::Mat pose_estimation(cv::Mat &sceneCloud, std::string ply_model,
 
     return cv::Mat::zeros(4,4,CV_32FC1);
 }
+
+}
+

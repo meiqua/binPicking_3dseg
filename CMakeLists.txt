@@ -4,11 +4,11 @@ project(cxx_3d_seg_pybind)
 
 # debug or release
 #SET(CMAKE_BUILD_TYPE "Debug")
-##SET(CMAKE_BUILD_TYPE "Release")
-#SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb -fPIC")
-#SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -fPIC")
+SET(CMAKE_BUILD_TYPE "Release")
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb -fPIC")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -fPIC")
 
-OPTION(USE_PYBIND "Enable pybind" TRUE)
+OPTION(USE_PYBIND "Enable pybind" 0)
 
 # opencv
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} /home/meiqua/anaconda3/envs/furnace)
@@ -25,8 +25,7 @@ include_directories(${INCLUDE_DIRECTORIES}
 
 
 # super4pcs
-find_package(Super4PCS REQUIRED
-    PATHS /home/meiqua/Super4PCS/build/install/lib)
+find_package(Super4PCS REQUIRED PATHS /usr/local/lib/cmake/)
 include_directories(${INCLUDE_DIRECTORIES}
     ${Super4PCS_INCLUDE_DIR})
 link_directories(${LINK_DIRECTORIES}
