@@ -70,29 +70,35 @@ std::vector<T> unique(const cv::Mat& input, bool sort = true)
     return out;
 }
 
-cv::Mat draw_axis(cv::Mat& rgb, cv::Mat& T, cv::Mat& K){
+cv::Mat draw_axis(cv::Mat rgb, cv::Mat T, cv::Mat K){
     // unit is mm
     cv::Mat result = rgb;
-    float data[] = {
+    double data[] = {
                     100, 0,   0,   0,
                     0,   100, 0,   0,
                     0,   0,   100, 0,
                     1,   1,   1,   1
                     };
-    cv::Mat points = cv::Mat(4,4,CV_32FC1, data);
+    cv::Mat points = cv::Mat(4,4,CV_64FC1, data);
 
-    float tran[] = {
+    double tran[] = {
                     1,   0,   0,   0,
                     0,   1,   0,   0,
                     0,   0,   1,   0,
                     };
-    cv::Mat tran_mat = cv::Mat(3,4,CV_32FC1, tran);
+    cv::Mat tran_mat = cv::Mat(3,4,CV_64FC1, tran);
+
+    // unbelievable, float may overflow when testing
+    T.convertTo(T, CV_64F);
+    K.convertTo(K, CV_64F);
 
     cv::Mat p_3d = K*tran_mat*T*points;
-    std::vector<cv::Point2f> p_2d(4);
+    cout <<"\np_3d:\n" << p_3d << endl;
+
+    std::vector<cv::Point2d> p_2d(4);
     for(int i=0; i<4; i++){
-        p_2d[i].x = p_3d.col(i).at<float>(0,0)/p_3d.col(i).at<float>(2,0);
-        p_2d[i].y = p_3d.col(i).at<float>(1,0)/p_3d.col(i).at<float>(2,0);
+        p_2d[i].x = p_3d.col(i).at<double>(0,0)/p_3d.col(i).at<double>(2,0);
+        p_2d[i].y = p_3d.col(i).at<double>(1,0)/p_3d.col(i).at<double>(2,0);
     }
     cv::line(result, p_2d[0], p_2d[3], cv::Scalar(255, 0, 0), 3);
     cv::line(result, p_2d[1], p_2d[3], cv::Scalar(0, 255, 0), 3);
@@ -121,7 +127,9 @@ void dataset_test(){
         slimage::Image3ub img_color = slimage::anonymous_cast<unsigned char,3>(rgb_slimage);
         slimage::Image1ui16 img_depth = slimage::anonymous_cast<uint16_t,1>(dep_slimage);
 
-        auto test_group = asp::DsapGrouping(img_color, img_depth);
+        slimage::Image3f sli_world;
+        slimage::Image3f sli_normal;
+        auto test_group = asp::DsapGrouping(img_color, img_depth, asp::DaspParameters(), sli_world, sli_normal);
         Mat idxs = slimage::ConvertToOpenCv(test_group);
 
         timer.out("grouping");
@@ -163,7 +171,9 @@ void simple_test(){
     slimage::Image3ub img_color = slimage::anonymous_cast<unsigned char,3>(rgb_slimage);
     slimage::Image1ui16 img_depth = slimage::anonymous_cast<uint16_t,1>(dep_slimage);
 
-    auto test_group = asp::DsapGrouping(img_color, img_depth);
+    slimage::Image3f sli_world;
+    slimage::Image3f sli_normal;
+    auto test_group = asp::DsapGrouping(img_color, img_depth, asp::DaspParameters(), sli_world, sli_normal);
     Mat idxs = slimage::ConvertToOpenCv(test_group);
 
     timer.out("grouping");
@@ -203,7 +213,9 @@ void super4pcs_test(){
     slimage::Image3ub img_color = slimage::anonymous_cast<unsigned char,3>(rgb_slimage);
     slimage::Image1ui16 img_depth = slimage::anonymous_cast<uint16_t,1>(dep_slimage);
 
-    auto test_group = asp::DsapGrouping(img_color, img_depth);
+    slimage::Image3f sli_world;
+    slimage::Image3f sli_normal;
+    auto test_group = asp::DsapGrouping(img_color, img_depth, asp::DaspParameters(), sli_world, sli_normal);
     Mat idxs = slimage::ConvertToOpenCv(test_group);
 
     timer.out("grouping");
@@ -277,8 +289,6 @@ void super4pcs_test(){
     std::cout << "final LCP: " << score << std::endl;
     cout << transformation.inverse() << endl;
     timer.out("super4pcs");
-
-    waitKey(0);
 }
 
 void ppf_test(){
@@ -294,7 +304,9 @@ void ppf_test(){
     slimage::Image3ub img_color = slimage::anonymous_cast<unsigned char,3>(rgb_slimage);
     slimage::Image1ui16 img_depth = slimage::anonymous_cast<uint16_t,1>(dep_slimage);
 
-    auto test_group = asp::DsapGrouping(img_color, img_depth);
+    slimage::Image3f sli_world;
+    slimage::Image3f sli_normal;
+    auto test_group = asp::DsapGrouping(img_color, img_depth, asp::DaspParameters(), sli_world, sli_normal);
     Mat idxs = slimage::ConvertToOpenCv(test_group);
 
     timer.out("grouping");
@@ -384,11 +396,79 @@ void ppf_test(){
 //    Mat pc = loadPLYSimple(modelFileName.c_str(), 1);
 }
 
+void api_test(){
+    string prefix = "/home/meiqua/6DPose/cxx_3d_seg/test/2/";
+    Mat rgb = cv::imread(prefix+"rgb/0002.png");
+    Mat depth = cv::imread(prefix+"depth/0002.png", CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH);
+
+    test_helper::Timer timer;
+    Mat sceneK = (Mat_<float>(3,3)
+                  << 550.0, 0.0, 316.0, 0.0, 540.0, 244.0, 0.0, 0.0, 1.0);
+    Mat cloud, normal;
+    Mat idxs = cxx_3d_seg::convex_cloud_seg(rgb, depth, sceneK, cloud, normal);
+
+    timer.out("grouping");
+    {  // show seg result
+        std::vector<int> unik = test_helper::unique<int>(idxs, true);
+        std::map<int, Vec3b> color_map;
+        for(auto idx: unik){
+            auto color = Vec3b(rand()%255, rand()%255, rand()%255);
+            color_map[idx] = color;
+        }
+
+        Mat show = Mat(idxs.size(), CV_8UC3, Scalar(0));
+        auto show_iter = show.begin<Vec3b>();
+        for(auto idx_iter = idxs.begin<int>(); idx_iter<idxs.end<int>();idx_iter++, show_iter++){
+            if(*idx_iter>=0){
+                auto color = color_map.find(*idx_iter)->second;
+                *show_iter = color;
+            }
+        }
+        imshow("rgb", rgb);
+        imshow("seg result", show);
+//        waitKey(1);
+    }
+
+    int test_which = 3;
+    int test_count = 0;
+//    Mat show = Mat(idxs.size(), CV_8UC3, Scalar(0));
+    Mat  show = rgb.clone();
+    auto show_iter = show.begin<Vec3b>();
+    for(auto idx_iter = idxs.begin<int>(); idx_iter<idxs.end<int>();idx_iter++, show_iter++){
+        if(*idx_iter==test_which){
+            *show_iter = {0, 0, 255};
+            test_count ++;
+        }
+    }
+    std::cout << "test_count: " << test_count << std::endl;
+    imshow("one seg", show);
+    waitKey(0);
+
+    Mat mask = idxs == test_which;
+    Mat cloud_test = Mat(cloud.size(), CV_32FC3, cv::Scalar(0,0,0));
+
+    Mat opencv_cloud;
+    cv::rgbd::depthTo3d(depth, sceneK, opencv_cloud);
+    cloud.copyTo(cloud_test, mask);
+
+//    cout << "cloud: " << cloud_test << endl;
+//    waitKey(0);
+//    cout << "opencv cloud: " << opencv_cloud << endl;
+
+    Mat pose = cxx_3d_seg::pose_estimation(cloud_test, (prefix+"model.ply"), 2);
+    cout << "pose:\n" << pose << endl;
+
+    Mat show_axis = rgb.clone();
+    test_helper::draw_axis(show_axis, pose, sceneK);
+    imshow("axis", show_axis);
+    waitKey(0);
+}
 int main(){
 //    simple_test();
 //    dataset_test();
-   super4pcs_test();
+//   super4pcs_test();
 //    ppf_test();
+    api_test();
     cout << "end" << endl;
     return 0;
 }
