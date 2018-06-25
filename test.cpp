@@ -93,7 +93,7 @@ cv::Mat draw_axis(cv::Mat rgb, cv::Mat T, cv::Mat K){
     K.convertTo(K, CV_64F);
 
     cv::Mat p_3d = K*tran_mat*T*points;
-    cout <<"\np_3d:\n" << p_3d << endl;
+//    cout <<"\np_3d:\n" << p_3d << endl;
 
     std::vector<cv::Point2d> p_2d(4);
     for(int i=0; i<4; i++){
@@ -106,6 +106,21 @@ cv::Mat draw_axis(cv::Mat rgb, cv::Mat T, cv::Mat K){
     return result;
 }
 
+void show_depth(cv::Mat map, bool color = true){
+    double min;
+    double max;
+    cv::minMaxIdx(map, &min, &max);
+    cv::Mat adjMap;
+    cv::convertScaleAbs(map, adjMap, 255 / max);
+    if(color){
+        cv::Mat falseColorsMap;
+        applyColorMap(adjMap, falseColorsMap, cv::COLORMAP_HOT);
+        cv::imshow("depth", falseColorsMap);
+    }else {
+        cv::imshow("depth", adjMap);
+    }
+
+}
 }
 
 void dataset_test(){
@@ -398,8 +413,8 @@ void ppf_test(){
 
 void api_test(){
     string prefix = "/home/meiqua/6DPose/cxx_3d_seg/test/2/";
-    Mat rgb = cv::imread(prefix+"rgb/0002.png");
-    Mat depth = cv::imread(prefix+"depth/0002.png", CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH);
+    Mat rgb = cv::imread(prefix+"rgb/0000.png");
+    Mat depth = cv::imread(prefix+"depth/0000.png", CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH);
 
     test_helper::Timer timer;
     Mat sceneK = (Mat_<float>(3,3)
@@ -424,12 +439,13 @@ void api_test(){
                 *show_iter = color;
             }
         }
+        test_helper::show_depth(depth);
         imshow("rgb", rgb);
         imshow("seg result", show);
 //        waitKey(1);
     }
 
-    int test_which = 3;
+    int test_which = 2;
     int test_count = 0;
 //    Mat show = Mat(idxs.size(), CV_8UC3, Scalar(0));
     Mat  show = rgb.clone();
@@ -455,7 +471,7 @@ void api_test(){
 //    waitKey(0);
 //    cout << "opencv cloud: " << opencv_cloud << endl;
 
-    Mat pose = cxx_3d_seg::pose_estimation(cloud_test, (prefix+"model.ply"), 2);
+    Mat pose = cxx_3d_seg::pose_estimation(cloud_test, (prefix+"model.ply"));
     cout << "pose:\n" << pose << endl;
 
     Mat show_axis = rgb.clone();

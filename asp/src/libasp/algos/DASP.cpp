@@ -412,7 +412,7 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
                                 int parent1 = group_helper::find(x, vertices);
                                 if(parent2 != parent1){
                                     int convex_check = 0;
-                                    int convex_thresh = 8;
+                                    int convex_thresh = 4;
                                     for(int i=0; i<vertices[parent1].worlds.size(); i++){
                                         auto& world1 = vertices[parent1].worlds[i];
                                         auto& normal1 = vertices[parent1].normals[i];

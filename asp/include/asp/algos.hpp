@@ -110,7 +110,7 @@ namespace asp
 		unsigned num_superpixels = 0;
 
 		// tradeoff between 3D compact superpixels (compactness=1) and boundary recall (compactness=0)
-		float compactness = 0.5f;
+        float compactness = 0.8f;
 
 		// tradeoff between using color (normal_weight=0) and normals (normal_weight=1) as data term in the distance function
 		float normal_weight = 1.0f;
