@@ -1,7 +1,9 @@
 #include "cxx_3d_seg.h"
 namespace cxx_3d_seg {
-cv::Mat convex_cloud_seg(cv::Mat &rgb, cv::Mat &depth, cv::Mat& sceneK, cv::Mat& world, cv::Mat& normal)
+convex_result convex_cloud_seg(cv::Mat &rgb, cv::Mat &depth, cv::Mat& sceneK)
 {
+    convex_result result;
+
     auto rgb_slimage = slimage::ConvertToSlimage(rgb);
     auto dep_slimage = slimage::ConvertToSlimage(depth);
     slimage::Image3ub img_color = slimage::anonymous_cast<unsigned char,3>(rgb_slimage);
@@ -15,8 +17,8 @@ cv::Mat convex_cloud_seg(cv::Mat &rgb, cv::Mat &depth, cv::Mat& sceneK, cv::Mat&
     slimage::Image3f sli_normal;
     auto test_group = asp::DsapGrouping(img_color, img_depth, opt_in, sli_world, sli_normal);
     cv::Mat idxs = slimage::ConvertToOpenCv(test_group);
-    world = slimage::ConvertToOpenCv(sli_world);
-    normal = slimage::ConvertToOpenCv(sli_normal);
+    cv::Mat world = slimage::ConvertToOpenCv(sli_world);
+    cv::Mat normal = slimage::ConvertToOpenCv(sli_normal);
 
     // channel order was changed
 //    for(int i=0; i<sli_normal.height(); i++){
@@ -40,7 +42,11 @@ cv::Mat convex_cloud_seg(cv::Mat &rgb, cv::Mat &depth, cv::Mat& sceneK, cv::Mat&
     bgr_v[2] = bgr[0];
     cv::merge(bgr_v, normal);
 
-    return idxs;
+    result.normal = normal;
+    result.world = world;
+    result.indices = idxs;
+
+    return result;
 }
 
 cv::Mat pose_estimation(cv::Mat &sceneCloud, std::string ply_model, int pcs_seconds,

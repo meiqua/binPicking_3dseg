@@ -15,8 +15,18 @@
 #include "super4pcs/io/io.h"
 
 namespace cxx_3d_seg {
+
+struct convex_result {
+    const cv::Mat &getIndices() const { return indices;}
+    const cv::Mat &getWorld() const { return world;}
+    const cv::Mat &getNormal() const { return normal;}
+    cv::Mat indices;
+    cv::Mat world;
+    cv::Mat normal;
+};
+
 // seg cloud to convex part, sorted by pixel counts
-cv::Mat convex_cloud_seg(cv::Mat& rgb, cv::Mat& depth, cv::Mat& sceneK, cv::Mat& world, cv::Mat& normal);
+convex_result convex_cloud_seg(cv::Mat& rgb, cv::Mat& depth, cv::Mat& sceneK);
 
 cv::Mat pose_estimation(cv::Mat& cloud, std::string ply_model, int pcs_secends = 1,
                         float LCP_thresh = 0.5);
