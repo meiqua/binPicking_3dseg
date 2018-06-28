@@ -172,9 +172,9 @@ void dataset_test(){
 }
 
 void simple_test(){
-    string prefix = "/home/meiqua/6DPose/cxx_3d_seg/test/2/";
-    Mat rgb = cv::imread(prefix+"rgb/0001.png");
-    Mat depth = cv::imread(prefix+"depth/0001.png", CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH);
+    string prefix = "/home/meiqua/binPicking_3dseg/test/2/";
+    Mat rgb = cv::imread(prefix+"rgb/0002.png");
+    Mat depth = cv::imread(prefix+"depth/0002.png", CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH);
 
 //    pyrDown(rgb, rgb);
 //    pyrDown(depth, depth);
@@ -203,7 +203,7 @@ void simple_test(){
     Mat show = Mat(idxs.size(), CV_8UC3, Scalar(0));
     auto show_iter = show.begin<Vec3b>();
     for(auto idx_iter = idxs.begin<int>(); idx_iter<idxs.end<int>();idx_iter++, show_iter++){
-        if(*idx_iter>0){
+        if(*idx_iter>=0){
             auto color = color_map.find(*idx_iter)->second;
             *show_iter = color;
         }
@@ -413,8 +413,8 @@ void ppf_test(){
 
 void api_test(){
     string prefix = "/home/meiqua/6DPose/cxx_3d_seg/test/2/";
-    Mat rgb = cv::imread(prefix+"rgb/0000.png");
-    Mat depth = cv::imread(prefix+"depth/0000.png", CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH);
+    Mat rgb = cv::imread(prefix+"rgb/0001.png");
+    Mat depth = cv::imread(prefix+"depth/0001.png", CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH);
 
     test_helper::Timer timer;
     Mat sceneK = (Mat_<float>(3,3)
@@ -445,7 +445,7 @@ void api_test(){
 //        waitKey(1);
     }
 
-    int test_which = 2;
+    int test_which = 3;
     int test_count = 0;
 //    Mat show = Mat(idxs.size(), CV_8UC3, Scalar(0));
     Mat  show = rgb.clone();
@@ -471,7 +471,7 @@ void api_test(){
 //    waitKey(0);
 //    cout << "opencv cloud: " << opencv_cloud << endl;
 
-    Mat pose = cxx_3d_seg::pose_estimation(cloud_test, (prefix+"model.ply"));
+    Mat pose = cxx_3d_seg::pose_estimation(cloud_test, (prefix+"model.ply"), 2);
     cout << "pose:\n" << pose << endl;
 
     Mat show_axis = rgb.clone();

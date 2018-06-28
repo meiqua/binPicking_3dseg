@@ -75,7 +75,7 @@ cv::Mat pose_estimation(cv::Mat &sceneCloud, std::string ply_model, int pcs_seco
     float score = 0;
     {
         GlobalRegistration::Match4PCSOptions options;
-        options.sample_size = 30;
+        options.sample_size = 200;
         options.max_time_seconds = pcs_seconds;
         constexpr GlobalRegistration::Utils::LogLevel loglvl = GlobalRegistration::Utils::Verbose;
         GlobalRegistration::Utils::Logger logger(loglvl);

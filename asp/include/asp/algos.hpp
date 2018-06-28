@@ -104,7 +104,7 @@ namespace asp
 		float depth_to_z = 0.001f;
 
 		// 3D radius of superpixels in meters
-        float radius = 0.01f;
+        float radius = 0.015f;
 
 		// if num_superpixels is greater 0, superpixel density is scaled by a constant factor to give the desired number of superpixels
 		unsigned num_superpixels = 0;

@@ -345,11 +345,11 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
                     bool isConvex = true;
                     auto convex_angle = center1_2.normalized().dot(normal1);
                     auto convex_angle2 = -center1_2.normalized().dot(normal2);
-                    if(convex_angle<-0.2 || convex_angle2<-0.2){
+                    if(convex_angle<-0.2f || convex_angle2<-0.2f){
                         isConvex = false;
                     }
-                    double weight =(1-std::abs(normal1.dot(normal2)));
-                    if(!isConvex || center1_2.norm()/R_seed>2){
+                    float weight =(1-std::abs(normal1.dot(normal2)));
+                    if(!isConvex || center1_2.norm()/R_seed>3){
                         continue;  // don't want the edge
                     }
                     edge.weight = weight;
@@ -375,7 +375,7 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
                 }
                 if(edge.count>R_seed*400){
                     // plane grouping
-                    if(edge.weight<0.04)
+                    if(edge.weight<0.02)
                     {
                         vertices[parent1].parent = parent2;
 
@@ -412,7 +412,7 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
                                 int parent1 = group_helper::find(x, vertices);
                                 if(parent2 != parent1){
                                     int convex_check = 0;
-                                    int convex_thresh = 4;
+                                    int convex_thresh = 1;
                                     for(int i=0; i<vertices[parent1].worlds.size(); i++){
                                         auto& world1 = vertices[parent1].worlds[i];
                                         auto& normal1 = vertices[parent1].normals[i];
@@ -423,7 +423,7 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
                                             auto center2_1 = (world2-world1).normalized();
                                             auto convex_angle = center2_1.dot(normal2);
                                             auto convex_angle2 = -center2_1.dot(normal1);
-                                            if(convex_angle<-0.2 || convex_angle2<-0.2){
+                                            if(convex_angle<-0.1f || convex_angle2<-0.1f){
                                                 convex_check += 1;
                                                 if(convex_check>convex_thresh){
                                                     break;
